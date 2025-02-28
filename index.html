@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #00a65a;
+            --color-pending: #ffa726;
+            --color-completed: #2ecc71;
+            --color-light-bg: #f8f9fa;
+            --color-white: #fff;
+            --color-text: #2d3436;
+            --color-text-light: #636e72;
+            --box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--color-light-bg);
+            padding: 2rem;
+            padding-top: 5rem;
+        }
+
+        /* Header/Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+        }
+
+        .logo {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var (--color-text);
+        }
+
+        /* Main Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--color-white);
+            border-radius: 0;
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            height: 100vh;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            width: 250px;
+            transition: left 0.3s ease;
+            z-index: 1001;
+            padding-top: 5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--color-primary);
+            color: var (--color-white);
+        }
+
+        .nav-item:hover {
+            background: var (--color-primary);
+            color: var (--color-white);
+        }
+
+        /* Cards Section */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: var(--color-text);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            color: var(--color-primary);
+            font-size: 0.9rem;
+        }
+
+        /* Orders Table */
+        .orders-card {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var (--box-shadow);
+        }
+
+        .orders-card h2 {
+            color: var(--color-text);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .orders-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--color-text-light);
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .orders-table td {
+            padding: 1rem;
+            color: var (--color-text);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-badge.pending {
+            background: #f97316;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-badge.preparing {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .action-button:hover {
+            opacity: 0.9;
+        }
+
+        .action-button.accept {
+            background: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .action-button.decline {
+            background: #ff6b6b;
+            color: var(--color-white);
+            margin-left: 0.5rem;
+        }
+
+        /* Table Status Grid */
+        .table-status {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            width: 300px;
+        }
+
+        .table-status h2 {
+            color: var(--color-text);
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .table-item {
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            color: var (--color-white);
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .table-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .table-item.available {
+            background: var(--color-primary);
+        }
+
+        .table-item.occupied {
+            background: #ff6b6b;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .table-status {
+                width: 100%;
+                margin-top: 2rem;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 1rem;
+                padding-top: 5rem;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .orders-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .table-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dark Theme */
+        .dark-theme {
+            --color-light-bg: #1a1a1a;
+            --color-white: #2d2d2d;
+            --color-text: #ffffff;
+            --color-text-light: #a0a0a0;
+        }
+
+        /* Updated Orders Section Styles */
+        .orders-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .orders-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-quantity {
+            color: var(--color-text-light);
+            margin-left: 8px;
+        }
+
+        /* Updated Button Styles */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-accept {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-decline {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .date-filter {
+            padding: 8px 12px;
+            border: 1px solid var(--color-text-light);
+            border-radius: 6px;
+            color: var(--color-text);
+            background: var(--color-white);
+            cursor: pointer;
+        }
+
+        .date-filter:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var (--color-text-light);
+            border-radius: 6px;
+            background: var(--color-white);
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            background: none;
+            color: var(--color-text);
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .search-bar .material-icons {
+            color: var(--color-text-light);
+            font-size: 20px;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Add these dark theme overrides */
+        .dark-theme .orders-table td,
+        .dark-theme .orders-title,
+        .dark-theme .item-list,
+        .dark-theme .search-bar input {
+            color: #ffffff;
+        }
+
+        .dark-theme .orders-table th {
+            color: #a0a0a0;
+        }
+
+        .dark-theme .item-quantity {
+            color: #a0a0a0;
+        }
+
+        .dark-theme .search-bar,
+        .dark-theme .date-filter {
+            background: #2d2d2d;
+            border-color: #404040;
+            color: #ffffff;
+        }
+
+        .dark-theme .search-bar input::placeholder {
+            color: #a0a0a0;
+        }
+
+        /* Bill Request Styles */
+        .btn-send-bill {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-send-bill:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .total-amount {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        @media screen and (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .table-status {
+                width: 100%;
+                margin-top: 2rem;
+            }
+        }
+
+        /* Update item list styles */
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 0.9rem;
+        }
+
+        .item-details {
+            display: flex;
+            align-items: center;
+        }
+
+        .item-name {
+            color: var(--color-text);
+        }
+
+        .item-quantity {
+            color: var(--color-text-light);
+            margin-left: 4px;
+        }
+
+        /* Dark theme adjustments */
+        .dark-theme .item-name {
+            color: #ffffff;
+        }
+
+        .dark-theme .item-quantity {
+            color: #a0a0a0;
+        }
+
+        .btn-complete {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-complete:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Add these loader styles */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--color-text-light);
+            border-bottom-color: var(--color-primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .table-loader {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .dark-theme .loader {
+            border-color: #404040;
+            border-bottom-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="logo" style="text-decoration: none;">NomNom Station</a>
+        <div class="header-actions">
+            <button id="theme-toggle" class="material-icons">dark_mode</button>
+            <button class="material-icons">menu</button>
+        </div>
+    </header>
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay"></div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="index.html" class="nav-item active">
+                <span class="material-icons">dashboard</span>
+                Dashboard
+            </a>
+            <a href="ordersection.html" class="nav-item">
+                <span class="material-icons">restaurant</span>
+                Active Orders
+            </a>
+            <a href="previousorder.html" class="nav-item">
+                <span class="material-icons">history</span>
+                Previous Orders
+            </a>
+            <a href="feedback.html" class="nav-item">
+                <span class="material-icons">feedback</span>
+                Feedback
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Stats Cards -->
+            <div class="cards">
+                <div class="stat-card" onclick="window.location.href='ordersection.html'">
+                    <h3>
+                        Today's Orders
+                        <span class="material-icons">more_vert</span>
+                    </h3>
+                    <div class="stat-number">24</div>
+                    <div class="stat-change">+12% from yesterday</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>
+                        Active Tables
+                        <span class="material-icons">more_vert</span>
+                    </h3>
+                    <div class="stat-number">8/12</div>
+                    <div class="stat-change">4 tables available</div>
+                </div>
+            </div>
+
+            <!-- Update Bill Requests section -->
+            <div class="orders-section" style="margin-bottom: 2rem;">
+                <div class="orders-header">
+                    <h1 class="orders-title">Bill Requests</h1>
+                </div>
+                <div id="billRequestsLoader" class="loader-container">
+                    <span class="loader"></span>
+                </div>
+                <table class="orders-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Table</th>
+                            <th>Request Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billRequestsTableBody">
+                        <!-- Bill requests will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Update Recent Orders section -->
+            <div class="orders-section">
+                <div class="orders-header">
+                    <h1 class="orders-title">Recent Orders</h1>
+                </div>
+                <div id="recentOrdersLoader" class="loader-container">
+                    <span class="loader"></span>
+                </div>
+                <table class="orders-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Table</th>
+                            <th>Items</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <!-- Orders will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Table Status -->
+        <aside class="table-status">
+            <h2>Table Status</h2>
+            <div class="table-grid">
+                <div class="table-item available">Table 1</div>
+                <div class="table-item occupied">Table 2</div>
+                <div class="table-item available">Table 3</div>
+                <div class="table-item occupied">Table 4</div>
+                <div class="table-item available">Table 5</div>
+                <div class="table-item available">Table 6</div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check saved theme
+        if (localStorage.getItem('dark-theme') === 'true') {
+            body.classList.add('dark-theme');
+            themeToggle.textContent = 'light_mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            themeToggle.textContent = body.classList.contains('dark-theme') ? 'light_mode' : 'dark_mode';
+            localStorage.setItem('dark-theme', body.classList.contains('dark-theme'));
+        });
+
+        // Mobile menu functionality
+        const menuButton = document.querySelector('.header-actions .material-icons:last-child');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+
+        // Function to open sidebar
+        function openSidebar() {
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Function to close sidebar
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Toggle sidebar on menu button click
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sidebar.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+
+        // Close sidebar when clicking overlay
+        overlay.addEventListener('click', closeSidebar);
+
+        // Prevent clicks inside sidebar from closing it
+        sidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Close sidebar on window resize if open
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1200 && sidebar.classList.contains('active')) {
+                closeSidebar();
+            }
+        });
+
+        // Function to apply dark theme based on localStorage
+        function applyTheme() {
+            if (localStorage.getItem('dark-theme') === 'true') {
+                body.classList.add('dark-theme');
+                themeToggle.textContent = 'light_mode';
+            } else {
+                body.classList.remove('dark-theme');
+                themeToggle.textContent = 'dark_mode';
+            }
+        }
+
+        // Apply theme on load
+        applyTheme();
+
+        // Initialize Socket.IO connection with error handling
+        let socket;
+        try {
+            socket = io('ws://sufficient-misty-cppnomnomstation-293dc6c4.koyeb.app', {
+                transports: ['websocket'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                timeout: 10000
+            });
+        } catch (error) {
+            console.error('Socket initialization error:', error);
+        }
+
+        // Socket connection handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            requestInitialData();
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            // Show error message in loaders
+            const billLoader = document.getElementById('billRequestsLoader');
+            const ordersLoader = document.getElementById('recentOrdersLoader');
+            
+            if (billLoader) {
+                billLoader.innerHTML = '<p>Connection error. Retrying...</p>';
+            }
+            if (ordersLoader) {
+                ordersLoader.innerHTML = '<p>Connection error. Retrying...</p>';
+            }
+            
+            // Retry connection after 5 seconds
+            setTimeout(() => {
+                socket.connect();
+            }, 5000);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        // Function to request all initial data
+        function requestInitialData() {
+            socket.emit('getRecentOrders');
+            socket.emit('getBillRequests');
+            socket.emit('getTableStatuses');
+        }
+
+        // Kitchen Orders Listeners
+        socket.on('loadKitchenOrders', (orders) => {
+            console.log('Received kitchen orders:', orders);
+            if (Array.isArray(orders)) {
+                populateOrdersTable(orders);
+                updateDashboardStats(orders);
+            }
+        });
+
+        // Bill Request Listeners
+        socket.on('loadBillRequests', (requests) => {
+            console.log('Received bill requests:', requests);
+            if (Array.isArray(requests)) {
+                populateBillRequests(requests);
+            }
+        });
+
+        socket.on('newBillRequest', (request) => {
+            console.log('New bill request received:', request);
+            addBillRequest(request);
+            playNotificationSound();
+        });
+
+        socket.on('billRequestUpdated', (request) => {
+            console.log('Bill request updated:', request);
+            updateBillRequest(request);
+        });
+
+        function createOrderRow(order) {
+            const tr = document.createElement('tr');
+            
+            // Order ID
+            const tdId = document.createElement('td');
+            tdId.textContent = order.order_id;
+            tr.appendChild(tdId);
+            
+            // Table
+            const tdTable = document.createElement('td');
+            tdTable.textContent = `Table ${order.table_id || order.table_number}`;
+            tr.appendChild(tdTable);
+            
+            // Items
+            const tdItems = document.createElement('td');
+            const itemList = document.createElement('div');
+            itemList.className = 'item-list';
+            
+            try {
+                if (order.sessions && Array.isArray(order.sessions)) {
+                    const allItems = new Map();
+                    
+                    order.sessions.forEach(session => {
+                        if (session.items && Array.isArray(session.items)) {
+                            session.items.forEach(item => {
+                                const name = item.item_name;
+                                const quantity = parseInt(item.quantity) || 1;
+                                const existing = allItems.get(name) || 0;
+                                allItems.set(name, existing + quantity);
+                            });
+                        }
+                    });
+                    
+                    if (allItems.size > 0) {
+                        allItems.forEach((quantity, name) => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'item';
+                            itemDiv.innerHTML = `
+                                <div class="item-details">
+                                    <span class="item-name">${name}</span>
+                                </div>
+                                <span class="item-quantity">×${quantity}</span>
+                            `;
+                            itemList.appendChild(itemDiv);
+                        });
+                    } else {
+                        itemList.innerHTML = '<div class="item">No items found</div>';
+                    }
+                } else {
+                    itemList.innerHTML = '<div class="item">No sessions found</div>';
+                }
+            } catch (error) {
+                console.error('Error processing items:', error);
+                itemList.innerHTML = '<div class="item">Error loading items</div>';
+            }
+            
+            tdItems.appendChild(itemList);
+            tr.appendChild(tdItems);
+            
+            // Add status, time and actions
+            // ...rest of existing createOrderRow code...
+            
+            return tr;
+        }
+
+        function createBillRequestRow(request) {
+            const tr = document.createElement('tr');
+            tr.id = `bill-${request.bill_request_id || request.order_id}`;
+            
+            // Order ID
+            const tdId = document.createElement('td');
+            tdId.textContent = request.order_id;
+            tr.appendChild(tdId);
+            
+            // Table
+            const tdTable = document.createElement('td');
+            tdTable.textContent = `Table ${request.table_number}`;
+            if (request.table_status === 'Occupied') {
+                tdTable.innerHTML += ' <span class="material-icons" style="color: #ff6b6b; font-size: 16px;">fiber_manual_record</span>';
+            }
+            tr.appendChild(tdTable);
+            
+            // Request Time
+            const tdTime = document.createElement('td');
+            const requestTime = request.requested_at || request.request_time;
+            tdTime.textContent = formatTime(requestTime);
+            tdTime.style.color = 'var(--color-text-light)';
+            tr.appendChild(tdTime);
+            
+            // Action Button
+            const tdAction = document.createElement('td');
+            if (request.bill_status !== 'Generated') {
+                const sendBillBtn = document.createElement('button');
+                sendBillBtn.className = 'btn-send-bill';
+                sendBillBtn.textContent = 'Send Bill';
+                sendBillBtn.onclick = () => handleSendBill(request);
+                tdAction.appendChild(sendBillBtn);
+            } else {
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `status-badge ${request.bill_status.toLowerCase()}`;
+                statusBadge.textContent = request.bill_status;
+                tdAction.appendChild(statusBadge);
+            }
+            tr.appendChild(tdAction);
+            
+            return tr;
+        }
+
+        function handleSendBill(request) {
+            if (!request || !request.order_id) {
+                console.error('Invalid request data');
+                return;
+            }
+
+            // First make the API call to update bill status
+            fetch(`https://sufficient-misty-cppnomnomstation-293dc6c4.koyeb.app/api/bill-requests/${request.order_id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    order_id: request.order_id,
+                    bill_status: 'Generated',
+                    table_number: request.table_number
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Bill status updated successfully:', data);
+                
+                // Update the UI
+                const row = document.getElementById(`bill-${request.bill_request_id || request.order_id}`);
+                if (row) {
+                    const updatedRequest = {
+                        ...request,
+                        bill_status: 'Generated'
+                    };
+                    const newRow = createBillRequestRow(updatedRequest);
+                    row.replaceWith(newRow);
+                }
+
+                // Notify the socket server about the update
+                socket.emit('bill_status_updated', {
+                    order_id: request.order_id,
+                    table_number: request.table_number,
+                    bill_status: 'Generated'
+                });
+            })
+            .catch(error => {
+                console.error('Error updating bill status:', error);
+                alert('Failed to update bill status. Please try again.');
+            });
+        }
+
+        // Add notification sound
+        function playNotificationSound() {
+            if (localStorage.getItem('notifications-enabled') !== 'false') {
+                const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log('Error playing sound:', e));
+            }
+        }
+
+        // Update populateBillRequests function
+        function populateBillRequests(requests) {
+            const tableBody = document.getElementById('billRequestsTableBody');
+            const loader = document.getElementById('billRequestsLoader');
+            const table = loader.nextElementSibling;
+            
+            if (!tableBody) return;
+            
+            try {
+                const pendingRequests = requests
+                    .filter(req => ['Pending', 'Generated'].includes(req.bill_status))
+                    .sort((a, b) => new Date(b.requested_at) - new Date(a.requested_at));
+                
+                tableBody.innerHTML = '';
+                pendingRequests.forEach(request => {
+                    const row = createBillRequestRow(request);
+                    tableBody.appendChild(row);
+                });
+                
+                // Hide loader and show table
+                loader.style.display = 'none';
+                table.style.display = 'table';
+            } catch (error) {
+                console.error('Error populating bill requests:', error);
+                tableBody.innerHTML = '<tr><td colspan="4">Error loading bill requests</td></tr>';
+            }
+        }
+
+        function updateTableGrid(tables) {
+            const tableGrid = document.querySelector('.table-grid');
+            if (!tableGrid) return;
+            
+            tableGrid.innerHTML = '';
+            
+            const sortedTables = tables.sort((a, b) => a.table_number - b.table_number);
+            
+            sortedTables.forEach(table => {
+                const tableItem = createTableItem(table);
+                tableGrid.appendChild(tableItem);
+            });
+
+            updateTableStats(tables);
+        }
+
+        function createTableItem(table) {
+            const tableItem = document.createElement('div');
+            tableItem.className = `table-item ${table.table_status.toLowerCase()}`;
+            tableItem.id = `table-${table.table_number}`;
+            
+            const tableInfo = document.createElement('div');
+            tableInfo.className = 'table-info';
+            
+            const tableNumber = document.createElement('div');
+            tableNumber.className = 'table-number';
+            tableNumber.textContent = `Table ${table.table_number}`;
+            
+            const statusIcon = document.createElement('span');
+            statusIcon.className = 'material-icons status-icon';
+            statusIcon.textContent = table.table_status.toLowerCase() === 'available' 
+                ? 'check_circle' 
+                : 'people';
+            
+            tableInfo.appendChild(tableNumber);
+            tableInfo.appendChild(statusIcon);
+            tableItem.appendChild(tableInfo);
+            
+            if (table.table_status.toLowerCase() === 'occupied' && table.active_order) {
+                const orderInfo = document.createElement('div');
+                orderInfo.className = 'order-info';
+                orderInfo.innerHTML = `
+                    <small>Order #${table.active_order}</small>
+                    <small>${formatTime(table.order_time)}</small>
+                `;
+                tableItem.appendChild(orderInfo);
+            }
+            
+            return tableItem;
+        }
+
+        function updateSingleTable(table) {
+            const existingTable = document.getElementById(`table-${table.table_number}`);
+            if (existingTable) {
+                const newTableItem = createTableItem(table);
+                existingTable.replaceWith(newTableItem);
+                
+                // Update stats
+                const allTables = document.querySelectorAll('.table-item');
+                const tables = Array.from(allTables).map(el => ({
+                    table_number: parseInt(el.id.split('-')[1]),
+                    table_status: el.classList.contains('occupied') ? 'Occupied' : 'Available'
+                }));
+                updateTableStats(tables);
+            }
+        }
+
+        function updateTableStats(tables) {
+            const totalTables = tables.length;
+            const occupiedTables = tables.filter(t => 
+                t.table_status.toLowerCase() === 'occupied'
+            ).length;
+            const availableTables = totalTables - occupiedTables;
+            
+            const statsNumber = document.querySelector('.stat-card:nth-child(2) .stat-number');
+            const statsChange = document.querySelector('.stat-card:nth-child(2) .stat-change');
+            
+            if (statsNumber && statsChange) {
+                statsNumber.textContent = `${occupiedTables}/${totalTables}`;
+                statsChange.textContent = `${availableTables} tables available`;
+            }
+        }
+
+        // Add Table Status Listeners
+        socket.on('loadTableStatuses', (tables) => {
+            console.log('Received table statuses:', tables);
+            if (Array.isArray(tables)) {
+                updateTableGrid(tables);
+            }
+        });
+
+        socket.on('tableStatusUpdate', (table) => {
+            console.log('Table status updated:', table);
+            updateSingleTable(table);
+        });
+
+        // Initialize page with error handling
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                applyTheme();
+                requestInitialData();
+                socket.emit('getBillRequests');
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        });
+
+        // Helper Functions
+        function formatTime(date) {
+            if (!date) return 'N/A';
+            
+            try {
+                const now = new Date();
+                const orderDate = new Date(date);
+                const diffMs = now - orderDate;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                if (diffMins < 1440) {
+                    const hours = orderDate.getHours().toString().padStart(2, '0');
+                    const minutes = orderDate.getMinutes().toString().padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                }
+                return orderDate.toLocaleDateString();
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return 'Invalid date';
+            }
+        }
+
+        function formatDateTime(date) {
+            if (!date) return { date: 'N/A', time: 'N/A' };
+            
+            try {
+                const orderDate = new Date(date);
+                return {
+                    date: orderDate.toLocaleDateString(),
+                    time: orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+            } catch (error) {
+                console.error('Error formatting datetime:', error);
+                return { date: 'Invalid date', time: 'Invalid time' };
+            }
+        }
+
+        // Kitchen Orders Listener for Recent Orders
+        socket.on('loadKitchenOrders', (orders) => {
+            console.log('Received kitchen orders:', orders);
+            if (!Array.isArray(orders)) {
+                console.error('Invalid orders data received');
+                return;
+            }
+
+            const tableBody = document.getElementById('ordersTableBody');
+            const loader = document.getElementById('recentOrdersLoader');
+            const table = loader.nextElementSibling;
+            
+            if (!tableBody) return;
+
+            try {
+                // Filter out completed, cancelled, and accepted orders
+                const activeOrders = orders.filter(order => {
+                    const latestSession = order.sessions?.sort((a, b) => 
+                        new Date(b.session_start) - new Date(a.session_start)
+                    )[0];
+                    const status = latestSession?.session_status || order.order_status;
+                    return !['Completed', 'Cancelled', 'Accepted'].includes(status);
+                });
+
+                // Sort orders by date, newest first and limit to 10
+                const sortedOrders = activeOrders
+                    .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+                    .slice(0, 10);
+
+                tableBody.innerHTML = '';
+                sortedOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    // Order ID and table info
+                    tr.innerHTML = `
+                        <td>${order.order_id}</td>
+                        <td>Table ${order.table_id}</td>
+                        <td>
+                            <div class="item-list">
+                                ${createItemsList(order.sessions)}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${getStatusClass(order)}">${getOrderStatus(order)}</span>
+                        </td>
+                        <td>${formatDateTime(order.order_date)}</td>
+                        <td>${createActionButtons(order)}</td>
+                    `;
+                    
+                    tableBody.appendChild(tr);
+                });
+
+                // Hide loader and show table
+                loader.style.display = 'none';
+                table.style.display = 'table';
+
+                // Update stats with all orders from today
+                const todayOrders = orders.filter(order => {
+                    const orderDate = new Date(order.order_date);
+                    const today = new Date();
+                    return orderDate.toDateString() === today.toDateString();
+                }).length;
+
+                updateDashboardStats(todayOrders);
+            } catch (error) {
+                console.error('Error populating orders:', error);
+                tableBody.innerHTML = '<tr><td colspan="6">Error loading orders</td></tr>';
+            }
+        });
+
+        // Helper functions
+        function createItemsList(sessions) {
+            if (!sessions || !Array.isArray(sessions)) return '<div class="item">No items found</div>';
+
+            const allItems = new Map();
+            
+            sessions.forEach(session => {
+                if (session.items && Array.isArray(session.items)) {
+                    session.items.forEach(item => {
+                        const existing = allItems.get(item.item_name) || 0;
+                        allItems.set(item.item_name, existing + (parseInt(item.quantity) || 1));
+                    });
+                }
+            });
+
+            if (allItems.size === 0) return '<div class="item">No items found</div>';
+
+            return Array.from(allItems).map(([name, quantity]) => `
+                <div class="item">
+                    ${name} × ${quantity}
+                </div>
+            `).join('');
+        }
+
+        function getOrderStatus(order) {
+            const latestSession = order.sessions?.sort((a, b) => 
+                new Date(b.session_start) - new Date(a.session_start)
+            )[0];
+            return latestSession?.session_status || order.order_status || 'Pending';
+        }
+
+        function getStatusClass(order) {
+            const status = getOrderStatus(order).toLowerCase();
+            return status.replace(/\s+/g, '-');
+        }
+
+        // Add this function to update session status via API
+        function updateSessionStatus(orderId, sessionId, status) {
+            const apiUrlBase = "https://sufficient-misty-cppnomnomstation-293dc6c4.koyeb.app/api/orders";
+            const apiUrl = `${apiUrlBase}/${orderId}/${sessionId}`;
+            const requestBody = { session_status: status };
+
+            console.log(`🔄 Sending ${status} request for Order ${orderId}, Session ${sessionId}`);
+
+            fetch(apiUrl, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(`✅ Order ${status} response:`, data);
+                alert(`✅ Order ${status} successfully!`);
+                document.querySelector(`#order-${orderId}`)?.remove(); // Remove order from table
+
+                // Emit socket event after successful API update
+                socket.emit(`${status.toLowerCase()}_order`, { orderId, sessionId });
+            })
+            .catch(error => {
+                console.error(`❌ Error updating order to ${status}:`, error);
+                alert(`❌ Failed to update order. Please try again.`);
+            });
+        }
+
+        // Update the createActionButtons function
+        function createActionButtons(order) {
+            const status = getOrderStatus(order);
+            const latestSession = order.sessions?.[0]?.session_id;
+
+            if (status === "Pending" || status === "Processing") {
+                return `
+                    <div class="action-buttons">
+                        <button class="btn btn-accept" onclick="updateSessionStatus('${order.order_id}', '${latestSession}', 'Accepted')">
+                            Accept
+                        </button>
+                        <button class="btn btn-decline" onclick="updateSessionStatus('${order.order_id}', '${latestSession}', 'Declined')">
+                            Decline
+                        </button>
+                    </div>
+                `;
+            } else if (status === "Accepted") {
+                return `
+                    <div class="action-buttons">
+                        <button class="btn btn-complete" onclick="updateSessionStatus('${order.order_id}', '${latestSession}', 'Completed')">
+                            Complete
+                        </button>
+                    </div>
+                `;
+            }
+            return '';
+        }
+
+        // Remove the old handleAcceptOrder and handleDeclineOrder functions
+
+        function updateDashboardStats(todayOrdersCount) {
+            const statsNumber = document.querySelector('.stat-card:nth-child(1) .stat-number');
+            const statsChange = document.querySelector('.stat-card:nth-child(1) .stat-change');
+            
+            if (statsNumber) {
+                statsNumber.textContent = todayOrdersCount;
+            }
+            if (statsChange) {
+                statsChange.textContent = `${todayOrdersCount} orders today`;
+            }
+        }
+
+        // Add new order received listener
+        socket.on('newOrderReceived', (order) => {
+            console.log('New order received:', order);
+            const tableBody = document.getElementById('ordersTableBody');
+            if (!tableBody || !order) return;
+
+            const newRow = createOrderRow(order);
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+            playNotificationSound();
+            
+            // Update stats
+            const statsNumber = document.querySelector('.stat-card:nth-child(1) .stat-number');
+            if (statsNumber) {
+                const currentOrders = parseInt(statsNumber.textContent) || 0;
+                statsNumber.textContent = currentOrders + 1;
+            }
+        });
+
+        // Helper function for formatting date and time
+        function formatDateTime(dateStr) {
+            const date = new Date(dateStr);
+            return `
+                <div>${date.toLocaleDateString()}</div>
+                <div style="font-size: 0.9rem; color: var(--color-text-light)">
+                    ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+            `;
+        }
+
+        // Update populateOrdersTable function
+        function populateOrdersTable(orders) {
+            const tableBody = document.getElementById('ordersTableBody');
+            const loader = document.getElementById('recentOrdersLoader');
+            const table = loader.nextElementSibling;
+            
+            if (!tableBody) return;
+
+            try {
+                // Sort orders by date, newest first
+                const sortedOrders = orders
+                    .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+                    .slice(0, 10); // Show only 10 most recent orders
+
+                tableBody.innerHTML = '';
+                sortedOrders.forEach(order => {
+                    // Create table row
+                    const tr = document.createElement('tr');
+                    
+                    // Order ID
+                    const tdId = document.createElement('td');
+                    tdId.textContent = order.order_id;
+                    tr.appendChild(tdId);
+                    
+                    // Table Number
+                    const tdTable = document.createElement('td');
+                    tdTable.textContent = `Table ${order.table_id}`;
+                    tr.appendChild(tdTable);
+                    
+                    // Items Column
+                    const tdItems = document.createElement('td');
+                    const itemList = document.createElement('div');
+                    itemList.className = 'item-list';
+                    
+                    if (order.sessions && Array.isArray(order.sessions)) {
+                        const allItems = new Map();
+                        
+                        order.sessions.forEach(session => {
+                            if (session.items && Array.isArray(session.items)) {
+                                session.items.forEach(item => {
+                                    const name = item.item_name;
+                                    const quantity = parseInt(item.quantity) || 1;
+                                    const existing = allItems.get(name) || 0;
+                                    allItems.set(name, existing + quantity);
+                                });
+                            }
+                        });
+
+                        allItems.forEach((quantity, name) => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'item';
+                            itemDiv.innerHTML = `
+                                <div class="item-details">
+                                    <span class="item-name">${name}</span>
+                                </div>
+                                <span class="item-quantity">×${quantity}</span>
+                            `;
+                            itemList.appendChild(itemDiv);
+                        });
+                    } else {
+                        itemList.innerHTML = '<div class="item">No items available</div>';
+                    }
+                    
+                    tdItems.appendChild(itemList);
+                    tr.appendChild(tdItems);
+                    
+                    // Status Column
+                    const tdStatus = document.createElement('td');
+                    const statusBadge = document.createElement('span');
+                    const latestSession = order.sessions?.sort((a, b) => 
+                        new Date(b.session_start) - new Date(a.session_start)
+                    )[0];
+                    const status = latestSession?.session_status || order.order_status || 'Pending';
+                    statusBadge.className = `status-badge ${status.toLowerCase()}`;
+                    statusBadge.textContent = status;
+                    tdStatus.appendChild(statusBadge);
+                    tr.appendChild(tdStatus);
+                    
+                    // Time Column
+                    const tdTime = document.createElement('td');
+                    const timeData = formatDateTime(order.order_date);
+                    tdTime.innerHTML = `
+                        <div>${timeData.date}</div>
+                        <div style="font-size: 0.9rem; color: var(--color-text-light)">${timeData.time}</div>
+                    `;
+                    tr.appendChild(tdTime);
+                    
+                    // Actions Column
+                    const tdActions = document.createElement('td');
+                    if (status === 'Pending' || status === 'Processing' || status === 'Accepted') {
+                        const actionButtons = document.createElement('div');
+                        actionButtons.className = 'action-buttons';
+                        
+                        const acceptBtn = document.createElement('button');
+                        acceptBtn.className = 'btn btn-accept';
+                        acceptBtn.textContent = 'Accept';
+                        acceptBtn.onclick = () => updateSessionStatus(order.order_id, latestSession?.session_id, 'Accepted');
+                        
+                        const declineBtn = document.createElement('button');
+                        declineBtn.className = 'btn btn-decline';
+                        declineBtn.textContent = 'Decline';
+                        declineBtn.onclick = () => updateSessionStatus(order.order_id, latestSession?.session_id, 'Declined');
+                        
+                        const completeBtn = document.createElement('button');
+                        completeBtn.className = 'btn btn-complete';
+                        completeBtn.textContent = 'Complete';
+                        completeBtn.onclick = () => updateSessionStatus(order.order_id, latestSession?.session_id, 'Completed');
+                        
+                        actionButtons.appendChild(acceptBtn);
+                        actionButtons.appendChild(declineBtn);
+                        actionButtons.appendChild(completeBtn);
+                        tdActions.appendChild(actionButtons);
+                    }
+                    tr.appendChild(tdActions);
+                    
+                    tableBody.appendChild(tr);
+                });
+
+                // Hide loader and show table
+                loader.style.display = 'none';
+                table.style.display = 'table';
+
+                // Update dashboard stats
+                updateDashboardStats(orders);
+            } catch (error) {
+                console.error('Error populating orders:', error);
+                tableBody.innerHTML = '<tr><td colspan="6">Error loading orders</td></tr>';
+            }
+        }
+
+        // Add loader reset on reconnection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            // Reset loaders to spinning state
+            const billLoader = document.getElementById('billRequestsLoader');
+            const ordersLoader = document.getElementById('recentOrdersLoader');
+            
+            if (billLoader) {
+                billLoader.innerHTML = '<span class="loader"></span>';
+                billLoader.style.display = 'flex';
+            }
+            if (ordersLoader) {
+                ordersLoader.innerHTML = '<span class="loader"></span>';
+                ordersLoader.style.display = 'flex';
+            }
+            
+            requestInitialData();
+        });
+    </script>
+</body>
+</html>

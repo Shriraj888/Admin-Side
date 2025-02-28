@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previous Orders - Tasty Restaurant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #00a65a;
+            --color-pending: #ffa726;
+            --color-completed: #2ecc71;
+            --color-light-bg: #f8f9fa;
+            --color-white: #fff;
+            --color-text: #2d3436;
+            --color-text-light: #636e72;
+            --box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--color-light-bg);
+            padding: 2rem;
+            padding-top: 5rem;
+        }
+
+        /* Header/Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+        }
+
+        .logo {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            background: var(--color-white);
+            border-radius: 0;
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            height: 100vh;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            width: 250px;
+            transition: left 0.3s ease;
+            z-index: 1001;
+            padding-top: 5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        /* Orders Section Styles */
+        .orders-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .orders-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            display: none;
+        }
+
+        .orders-table.loaded {
+            display: table;
+        }
+
+        .orders-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--color-text-light);
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .orders-table td {
+            padding: 1rem;
+            color: var(--color-text);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-badge.pending {
+            background: #f97316;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-badge.preparing {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-quantity {
+            color: var(--color-text-light);
+            margin-left: 8px;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--color-text-light);
+            border-radius: 6px;
+            background: var(--color-white);
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            background: none;
+            color: var(--color-text);
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .date-filter {
+            padding: 8px 12px;
+            border: 1px solid var(--color-text-light);
+            border-radius: 6px;
+            color: var(--color-text);
+            background: var(--color-white);
+            cursor: pointer;
+        }
+
+        /* Dark Theme */
+        .dark-theme {
+            --color-light-bg: #1a1a1a;
+            --color-white: #2d2d2d;
+            --color-text: #ffffff;
+            --color-text-light: #a0a0a0;
+        }
+
+        .status-badge.completed {
+            background: #10b981;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.cancelled {
+            background: #ef4444;
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .status-badge.accepted {
+            background: #3b82f6;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .status-badge.declined {
+            background: #f97316;
+            box-shadow: 0 2px 10px rgba(249, 115, 22, 0.2);
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name {
+            font-weight: 500;
+        }
+
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--color-text-light);
+            border-bottom-color: var(--color-primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dark-theme .loader {
+            border-color: #404040;
+            border-bottom-color: var(--color-primary);
+        }
+    </style>
+    <!-- Add Socket.IO script before closing head tag -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="logo" style="text-decoration: none;">NomNom Station</a>
+        <div class="header-actions">
+            <button id="theme-toggle" class="material-icons">dark_mode</button>
+            <button class="material-icons">menu</button>
+        </div>
+    </header>
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="index.html" class="nav-item">
+            <span class="material-icons">dashboard</span>
+            Dashboard
+        </a>
+        <a href="ordersection.html" class="nav-item">
+            <span class="material-icons">restaurant</span>
+            Active Orders
+        </a>
+        <a href="previousorder.html" class="nav-item active">
+            <span class="material-icons">history</span>
+            Previous Orders
+        </a>
+        <a href="feedback.html" class="nav-item">
+            <span class="material-icons">feedback</span>
+            Feedback
+        </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <div class="orders-section">
+            <div class="orders-header">
+                <h1 class="orders-title">Previous Orders</h1>
+                <div class="filter-section">
+                    <div class="search-bar">
+                        <span class="material-icons">search</span>
+                        <input type="text" id="orderSearchInput" placeholder="Search by Order ID">
+                    </div>
+                    <input type="date" id="orderDateFilter" class="date-filter">
+                </div>
+            </div>
+            <div id="ordersLoader" class="loader-container">
+                <span class="loader"></span>
+            </div>
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Table</th>
+                        <th>Items</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="previousOrdersTableBody">
+                    <!-- Orders will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        if (localStorage.getItem('dark-theme') === 'true') {
+            body.classList.add('dark-theme');
+            themeToggle.textContent = 'light_mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            themeToggle.textContent = body.classList.contains('dark-theme') ? 'light_mode' : 'dark_mode';
+            localStorage.setItem('dark-theme', body.classList.contains('dark-theme'));
+        });
+
+        // Mobile menu functionality
+        const menuButton = document.querySelector('.header-actions .material-icons:last-child');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        }
+
+        menuButton.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Initialize Socket.IO connection
+        const socket = io('ws://sufficient-misty-cppnomnomstation-293dc6c4.koyeb.app', {
+            transports: ['websocket']
+        });
+
+        // Socket connection handlers
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            showLoader();
+            requestPreviousOrders();
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            const loader = document.getElementById('ordersLoader');
+            if (loader) {
+                loader.innerHTML = '<p>Connection error. Retrying...</p>';
+            }
+        });
+
+        function showLoader() {
+            const loader = document.getElementById('ordersLoader');
+            const table = document.querySelector('.orders-table');
+            if (loader && table) {
+                loader.style.display = 'flex';
+                table.classList.remove('loaded');
+            }
+        }
+
+        function hideLoader() {
+            const loader = document.getElementById('ordersLoader');
+            const table = document.querySelector('.orders-table');
+            if (loader && table) {
+                loader.style.display = 'none';
+                table.classList.add('loaded');
+            }
+        }
+
+        function requestPreviousOrders() {
+            const searchInput = document.getElementById('orderSearchInput');
+            const dateFilter = document.getElementById('orderDateFilter');
+            
+            showLoader();
+            
+            socket.emit('getPreviousOrders', {
+                search: searchInput.value,
+                date: dateFilter.value
+            });
+        }
+
+        socket.on('loadPreviousOrders', (orders) => {
+            console.log('Received previous orders:', orders);
+            if (Array.isArray(orders)) {
+                populateOrdersTable(orders);
+            }
+        });
+
+        function formatDateTime(dateStr) {
+            const date = new Date(dateStr);
+            return {
+                date: date.toLocaleDateString(),
+                time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+        }
+
+        function populateOrdersTable(orders) {
+            const tableBody = document.getElementById('previousOrdersTableBody');
+            if (!tableBody) return;
+
+            try {
+                tableBody.innerHTML = '';
+                
+                // Filter completed and declined orders
+                const completedOrders = orders.filter(order => {
+                    const latestSession = order.sessions?.[0];
+                    const status = latestSession?.session_status || order.order_status;
+                    return ['Completed', 'Declined'].includes(status);
+                });
+
+                // Sort by date, newest first
+                const sortedOrders = completedOrders.sort((a, b) => 
+                    new Date(b.order_date) - new Date(a.order_date)
+                );
+
+                sortedOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    // Order ID
+                    const tdId = document.createElement('td');
+                    tdId.textContent = order.order_id;
+                    tr.appendChild(tdId);
+                    
+                    // Table Number
+                    const tdTable = document.createElement('td');
+                    tdTable.textContent = `Table ${order.table_id || order.table_number}`;
+                    tr.appendChild(tdTable);
+                    
+                    // Items Column
+                    const tdItems = document.createElement('td');
+                    tdItems.appendChild(createItemsList(order));
+                    tr.appendChild(tdItems);
+                    
+                    // Status Column
+                    const tdStatus = document.createElement('td');
+                    const latestSession = order.sessions?.[0];
+                    const status = latestSession?.session_status || order.order_status;
+                    tdStatus.innerHTML = `<span class="status-badge status-${status.toLowerCase()}">${status}</span>`;
+                    tr.appendChild(tdStatus);
+                    
+                    // Time Column
+                    const tdTime = document.createElement('td');
+                    const timeData = formatDateTime(order.order_date);
+                    tdTime.innerHTML = `
+                        <div>${timeData.date}</div>
+                        <div style="font-size: 0.9rem; color: var(--color-text-light)">${timeData.time}</div>
+                    `;
+                    tr.appendChild(tdTime);
+                    
+                    tableBody.appendChild(tr);
+                });
+
+                // Hide loader and show table
+                hideLoader();
+
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                tableBody.innerHTML = '<tr><td colspan="5">Error loading orders. Please try again.</td></tr>';
+                hideLoader();
+            }
+        }
+
+        function createItemsList(order) {
+            const itemList = document.createElement('div');
+            itemList.className = 'item-list';
+            
+            try {
+                if (order.sessions && Array.isArray(order.sessions)) {
+                    const allItems = new Map();
+                    
+                    order.sessions.forEach(session => {
+                        if (session.items && Array.isArray(session.items)) {
+                            session.items.forEach(item => {
+                                const existing = allItems.get(item.item_name) || 0;
+                                allItems.set(item.item_name, existing + (parseInt(item.quantity) || 1));
+                            });
+                        }
+                    });
+
+                    if (allItems.size > 0) {
+                        allItems.forEach((quantity, name) => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'item';
+                            itemDiv.innerHTML = `
+                                <div class="item-details">
+                                    <span class="item-name">${name}</span>
+                                </div>
+                                <span class="item-quantity">×${quantity}</span>
+                            `;
+                            itemList.appendChild(itemDiv);
+                        });
+                    } else {
+                        itemList.innerHTML = '<div class="item">No items found</div>';
+                    }
+                } else {
+                    itemList.innerHTML = '<div class="item">No sessions found</div>';
+                }
+            } catch (error) {
+                console.error('Error processing items:', error);
+                itemList.innerHTML = '<div class="item">Error loading items</div>';
+            }
+            
+            return itemList;
+        }
+
+        // Initialize filters
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('orderSearchInput');
+            const dateFilter = document.getElementById('orderDateFilter');
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            dateFilter.value = today;
+
+            // Add event listeners with debouncing
+            let debounceTimer;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    showLoader();
+                    requestPreviousOrders();
+                }, 300);
+            });
+
+            dateFilter.addEventListener('change', () => {
+                showLoader();
+                requestPreviousOrders();
+            });
+
+            // Initial request
+            showLoader();
+            requestPreviousOrders();
+        });
+    </script>
+</body>
+</html>

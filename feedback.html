@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Feedback - NomNom Station</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Root variables */
+        :root {
+            --color-primary: #00a65a;
+            --color-pending: #ffa726;
+            --color-completed: #2ecc71;
+            --color-light-bg: #f8f9fa;
+            --color-white: #fff;
+            --color-text: #2d3436;
+            --color-text-light: #636e72;
+            --box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+        }
+
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--color-light-bg);
+            padding: 2rem;
+            padding-top: 5rem;
+        }
+
+        /* Header styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+        }
+
+        .logo {
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            background: var(--color-white);
+            border-radius: 0;
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            height: 100vh;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            width: 250px;
+            transition: left 0.3s ease;
+            z-index: 1001;
+            padding-top: 5rem;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            color: var(--color-text);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .nav-item.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .nav-item:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        /* Dark Theme */
+        .dark-theme {
+            --color-light-bg: #1a1a1a;
+            --color-white: #2d2d2d;
+            --color-text: #ffffff;
+            --color-text-light: #a0a0a0;
+        }
+
+        /* Feedback specific styles */
+        .feedback-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .feedback-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .feedback-grid.loaded {
+            display: grid;
+        }
+
+        .feedback-card {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .feedback-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .customer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .customer-name {
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .feedback-time {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        .feedback-rating {
+            color: #fbbf24;
+            font-size: 1.2rem;
+        }
+
+        .feedback-text {
+            color: var(--color-text);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 12px 0;
+        }
+
+        .feedback-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        /* Dark theme adjustments */
+        .dark-theme .feedback-card {
+            background: var(--color-white);
+        }
+
+        .dark-theme .feedback-text,
+        .dark-theme .customer-name {
+            color: #ffffff;
+        }
+
+        .dark-theme .feedback-meta {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .refresh-btn.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Add loader styles */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--color-text-light);
+            border-bottom-color: var(--color-primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dark-theme .loader {
+            border-color: #404040;
+            border-bottom-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="index.html" class="logo" style="text-decoration: none;">NomNom Station</a>
+        <div class="header-actions">
+            <button id="theme-toggle" class="material-icons">dark_mode</button>
+            <button class="material-icons">menu</button>
+        </div>
+    </header>
+
+    <!-- Overlay -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Copy header and sidebar structure from index.html -->
+    <aside class="sidebar">
+        <a href="index.html" class="nav-item">
+            <span class="material-icons">dashboard</span>
+            Dashboard
+        </a>
+        <a href="ordersection.html" class="nav-item">
+            <span class="material-icons">restaurant</span>
+            Active Orders
+        </a>
+        <a href="previousorder.html" class="nav-item">
+            <span class="material-icons">history</span>
+            Previous Orders
+        </a>
+        <a href="feedback.html" class="nav-item active">
+            <span class="material-icons">feedback</span>
+            Feedback
+        </a>
+    </aside>
+    
+    <main class="feedback-container">
+        <div class="feedback-header">
+            <h1 class="feedback-title">Customer Feedback</h1>
+            <button id="refreshButton" class="refresh-btn">
+                <span class="material-icons">refresh</span>
+                Refresh Feedback
+            </button>
+        </div>
+        
+        <div id="feedbackLoader" class="loader-container">
+            <span class="loader"></span>
+        </div>
+        
+        <div class="feedback-grid" id="feedbackGrid">
+            <!-- Feedback cards will be populated here -->
+        </div>
+    </main>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        if (localStorage.getItem('dark-theme') === 'true') {
+            body.classList.add('dark-theme');
+            themeToggle.textContent = 'light_mode';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-theme');
+            themeToggle.textContent = body.classList.contains('dark-theme') ? 'light_mode' : 'dark_mode';
+            localStorage.setItem('dark-theme', body.classList.contains('dark-theme'));
+        });
+
+        // Mobile menu functionality
+        const menuButton = document.querySelector('.header-actions .material-icons:last-child');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        }
+
+        menuButton.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        async function fetchFeedback() {
+            const refreshBtn = document.getElementById('refreshButton');
+            const feedbackLoader = document.getElementById('feedbackLoader');
+            const feedbackGrid = document.getElementById('feedbackGrid');
+            
+            refreshBtn.classList.add('loading');
+            feedbackLoader.style.display = 'flex';
+            feedbackGrid.classList.remove('loaded');
+
+            try {
+                const response = await fetch('https://sufficient-misty-cppnomnomstation-293dc6c4.koyeb.app/api/feedback');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching feedback:', error);
+                feedbackGrid.innerHTML = '<p>Error loading feedback. Please try again.</p>';
+                return [];
+            } finally {
+                refreshBtn.classList.remove('loading');
+                feedbackLoader.style.display = 'none';
+                feedbackGrid.classList.add('loaded');
+            }
+        }
+
+        function createFeedbackCard(feedback) {
+            return `
+                <div class="feedback-card">
+                    <div class="feedback-meta">
+                        <p>Feedback ID: ${feedback.feedback_id}</p>
+                        <p>Client ID: ${feedback.client_id}</p>
+                    </div>
+                    <p class="feedback-text">${feedback.feedback_text || 'No feedback provided'}</p>
+                </div>
+            `;
+        }
+
+        async function populateFeedback() {
+            const feedbackGrid = document.getElementById('feedbackGrid');
+            const feedbacks = await fetchFeedback();
+            
+            if (Array.isArray(feedbacks)) {
+                feedbackGrid.innerHTML = feedbacks
+                    .map(createFeedbackCard)
+                    .join('');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add click handler for refresh button
+            document.getElementById('refreshButton').addEventListener('click', populateFeedback);
+            // Initial load
+            populateFeedback();
+        });
+
+        // Remove the auto-refresh interval
+        // setInterval(populateFeedback, 60000);
+    </script>
+</body>
+</html>
